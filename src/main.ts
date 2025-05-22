@@ -14,6 +14,7 @@ async function bootstrap() {
   app.enableCors({
     origin: '*', // Permite requisições do seu app Ionic
     methods: 'GET,POST,PUT,DELETE,OPTIONS',
+    allowedHeaders: 'Content-Type, Authorization'
   });
   //await app.listen(process.env.PORT ?? 3000);
   await app.listen(process.env.PORT ?? 3000, '0.0.0.0');

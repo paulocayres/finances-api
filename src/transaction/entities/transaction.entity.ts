@@ -34,12 +34,10 @@ export class Transaction extends Document {
   @Prop({ required: false })
   groupId: string;
 
+  @Prop({ required: true, index: true })
+  ownerId: string;  // ⬅️ Novo campo obrigatório
 }
 
 export type TransactionDocument = Transaction & Document;
 
 export const TransactionSchema = SchemaFactory.createForClass(Transaction);
-
-
-
-

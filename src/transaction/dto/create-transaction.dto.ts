@@ -34,37 +34,29 @@ export class CreateTransactionDto {
   tipo: TransactionType;
 
   @IsEnum(RecurrenceType)
-  @IsNotEmpty()
+  @IsOptional()
   recorrencia?: RecurrenceType;
 
   @IsOptional()
   @IsNumber()
   @Min(2)
-  @IsNotEmpty()
   numeroParcelas?: number;
 
   @IsNumber()
   @IsOptional()
   @Min(1)
-  @IsNotEmpty()
-  numeroParcela?: number; // preenchido pelo backend em transações parceladas
+  numeroParcela?: number; // Preenchido pelo backend para parcelas
 
   @IsEnum(PeriodUnit)
   @IsOptional()
-  @IsNotEmpty()
   unidadePeriodo?: PeriodUnit;
 
   @IsNumber()
   @Min(1)
   @IsOptional()
-  @IsNotEmpty()
   quantidadePeriodo?: number;
 
   @IsString()
   @IsOptional()
-  @IsNotEmpty()
-  groupId?: string; // Adiciona o campo groupId como opcional
-
+  groupId?: string;
 }
-
-

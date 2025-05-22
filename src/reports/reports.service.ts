@@ -15,16 +15,16 @@ export class ReportsService {
   /**
    * Agenda financeira mensal com saldo inicial, final e transações ordenadas.
    */
-  async getMonthlyAgenda({ year, month }: GetMonthlyAgendaDto) {
+  async getMonthlyAgenda({ year, month }: GetMonthlyAgendaDto, ownerId: string) {
     const startDate = dayjs(`${year}-${month}-01`).startOf('month').toDate();
     const endDate = dayjs(startDate).endOf('month').toDate();
 
-    // Transações do mês
-    const transactions = await this.transactionService.findByPeriod(startDate, endDate);
+    // Transações do mês filtradas por ownerId
+    const transactions = await this.transactionService.findByPeriod(startDate, endDate, ownerId);
 
-    // Saldo acumulado anterior ao mês
-    const previousTransactions = await this.transactionService.findBeforeDate(startDate);
-    const initialBalance = await this.initialBalanceService.get();
+    // Saldo acumulado anterior ao mês para o ownerId
+    const previousTransactions = await this.transactionService.findBeforeDate(startDate, ownerId);
+    const initialBalance = await this.initialBalanceService.get(ownerId);
     const saldoInicial = initialBalance?.valor || 0;
 
     const totalCreditsBefore = previousTransactions
@@ -61,8 +61,8 @@ export class ReportsService {
   /**
    * Relatório analítico por período com gráfico mensal de receitas, despesas e saldo.
    */
-  async getSummaryByPeriod(start: Date, end: Date) {
-    const transacoes = await this.transactionService.findByPeriod(start, end);
+  async getSummaryByPeriod(start: Date, end: Date, ownerId: string) {
+    const transacoes = await this.transactionService.findByPeriod(start, end, ownerId);
 
     const resumo = {
       totalReceitas: 0,

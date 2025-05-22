@@ -10,6 +10,9 @@ export class InitialBalance {
 
   @Prop({ required: true })
   data: Date;
+
+  @Prop({ required: true, index: true })
+  ownerId: string;  // id do usuário proprietário do saldo inicial
 }
 
 export const InitialBalanceSchema = SchemaFactory.createForClass(InitialBalance);
