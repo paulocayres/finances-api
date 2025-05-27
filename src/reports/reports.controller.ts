@@ -33,6 +33,7 @@ export class ReportsController {
     const user = req['user'];
     const ownerId = user.uid;
     console.log('Usuário autenticado:', user);
+    console.log(dataInicial,dataFinal);
     return this.reportsService.getSummary(ownerId, dataInicial, dataFinal);
   }
 }

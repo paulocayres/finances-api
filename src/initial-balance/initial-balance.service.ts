@@ -11,7 +11,7 @@ export class InitialBalanceService {
   ) {}
 
   async get(ownerId: string): Promise<InitialBalance> {
-    console.log('entrou no get com ownerId:', ownerId);
+    console.log('entrou no get Saldo Inicial com ownerId:', ownerId);
     const balance = await this.initialBalanceModel.findOne({ ownerId });
     if (!balance) {
       throw new NotFoundException('Saldo inicial não cadastrado para este usuário.');

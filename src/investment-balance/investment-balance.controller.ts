@@ -4,7 +4,7 @@ import { CreateInvestmentBalanceDto } from './dto/create-investment-balance.dto'
 import { InvestmentBalance } from './entities/investment-balance.entity';
 import { FirebaseAuthGuard } from 'src/firebase/firebase-auth.guard';
 
-@Controller('Investment-balance')
+@Controller('investment-balance')
 @UseGuards(FirebaseAuthGuard)
 export class InvestmentBalanceController {
   constructor(private readonly InvestmentBalanceService: InvestmentBalanceService) {}

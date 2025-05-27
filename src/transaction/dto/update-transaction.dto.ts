@@ -22,8 +22,4 @@ export class UpdateTransactionDto extends PartialType(CreateTransactionDto) {
   @IsEnum(TransactionType)
   @IsNotEmpty()
   tipo: TransactionType;
-
-  @IsString()
-  @IsNotEmpty()
-  centroCusto: string;
 }

@@ -15,7 +15,7 @@ export class TransactionService {
   ) {}
 
   async create(createTransactionDto: CreateTransactionDto, ownerId: string): Promise<Transaction[]> {
-    const { recorrencia, numeroParcelas, unidadePeriodo, data, ...rest } = createTransactionDto;
+    const { recorrencia, numeroParcelas, unidadePeriodo, quantidadePeriodo, data, ...rest } = createTransactionDto;
 
     if (recorrencia === RecurrenceType.PARCELADA && (!numeroParcelas || numeroParcelas < 1)) {
       throw new BadRequestException('Número de parcelas inválido para recorrência parcelada.');
@@ -23,6 +23,10 @@ export class TransactionService {
 
     if (recorrencia === RecurrenceType.RECORRENTE && !unidadePeriodo) {
       throw new BadRequestException('Unidade de período é obrigatória para recorrência recorrente.');
+    }
+
+    if (recorrencia === RecurrenceType.RECORRENTE && !quantidadePeriodo) {
+      throw new BadRequestException('UQuantidade de ocorrências é obrigatória para recorrência recorrente.');
     }
 
     const dataInicial = new Date(data);
@@ -50,9 +54,9 @@ export class TransactionService {
       return await this.transactionModel.insertMany(transacoes);
     }
 
-    if (recorrencia === RecurrenceType.RECORRENTE && unidadePeriodo) {
+    if (recorrencia === RecurrenceType.RECORRENTE && unidadePeriodo && quantidadePeriodo) {
       const transacoes: Transaction[] = [];
-      const maxOcorrencias = this.calcularMaxOcorrencias(unidadePeriodo);
+      const maxOcorrencias = this.calcularMaxOcorrencias(unidadePeriodo, quantidadePeriodo);
 
       for (let i = 0; i < maxOcorrencias; i++) {
         const novaData = this.adicionarPeriodo(dataInicial, unidadePeriodo, i);
@@ -115,7 +119,7 @@ export class TransactionService {
       throw new ForbiddenException('Acesso negado a esta transação.');
     }
 
-    const { recorrencia, numeroParcelas, unidadePeriodo, data, ...rest } = updateTransactionDto;
+    const { recorrencia, numeroParcelas, unidadePeriodo, quantidadePeriodo, data, ...rest } = updateTransactionDto;
 
     if (recorrencia === RecurrenceType.PARCELADA && (!numeroParcelas || numeroParcelas < 1)) {
       throw new BadRequestException('Número de parcelas inválido para recorrência parcelada.');
@@ -154,11 +158,11 @@ export class TransactionService {
       return transacoes[0];
     }
 
-    if (recorrencia === RecurrenceType.RECORRENTE && unidadePeriodo) {
+    if (recorrencia === RecurrenceType.RECORRENTE && unidadePeriodo && quantidadePeriodo) {
       await this.transactionModel.deleteMany({ groupId: transacao.groupId, ownerId });
 
       const transacoes: Transaction[] = [];
-      const maxOcorrencias = this.calcularMaxOcorrencias(unidadePeriodo);
+      const maxOcorrencias = this.calcularMaxOcorrencias(unidadePeriodo, quantidadePeriodo);
 
       for (let i = 0; i < maxOcorrencias; i++) {
         const novaData = this.adicionarPeriodo(dataInicial, unidadePeriodo, i);
@@ -223,16 +227,16 @@ export class TransactionService {
     return novaData;
   }
 
-  private calcularMaxOcorrencias(unidade: PeriodUnit): number {
+  private calcularMaxOcorrencias(unidade: PeriodUnit, quantidadePeriodo: number): number {
     switch (unidade) {
       case PeriodUnit.DIA:
-        return 365;
+        return quantidadePeriodo;
       case PeriodUnit.SEMANA:
-        return 52;
+        return quantidadePeriodo;
       case PeriodUnit.MES:
-        return 12;
+        return quantidadePeriodo;
       case PeriodUnit.ANO:
-        return 5;
+        return quantidadePeriodo;
       default:
         throw new BadRequestException('Unidade de período inválida.');
     }
