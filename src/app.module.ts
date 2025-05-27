@@ -8,12 +8,13 @@ import { ContaInvestimentoModule } from './conta-investimento/conta-investimento
 import { ReportsModule } from './reports/reports.module';
 import { APP_GUARD } from '@nestjs/core';
 import { FirebaseAuthGuard } from './firebase/firebase-auth.guard';
+import { InvestmentBalanceModule } from './investment-balance/investment-balance.module';
 
 const uri = "mongodb://localhost:27017/";
 
 
 @Module({
-  imports: [MongooseModule.forRoot(uri), TransactionModule, InitialBalanceModule, ContaInvestimentoModule, ReportsModule,],
+  imports: [MongooseModule.forRoot(uri), TransactionModule, InitialBalanceModule, ContaInvestimentoModule, ReportsModule, InvestmentBalanceModule,],
   controllers: [AppController],
   providers: [AppService,     {
       provide: APP_GUARD,

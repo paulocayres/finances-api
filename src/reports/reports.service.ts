@@ -4,12 +4,15 @@ import { TransactionService } from 'src/transaction/transaction.service';
 import { GetMonthlyAgendaDto } from './dto/GetMonthlyAgendaDto';
 import { TransactionType } from 'src/transaction/enums';
 import * as dayjs from 'dayjs';
+import { InvestmentBalanceService } from 'src/investment-balance/investment-balance.service';
+
 
 @Injectable()
 export class ReportsService {
   constructor(
     private readonly transactionService: TransactionService,
     private readonly initialBalanceService: InitialBalanceService,
+    private readonly investmentBalanceService: InvestmentBalanceService,
   ) {}
 
   /**
@@ -61,58 +64,89 @@ export class ReportsService {
   /**
    * Relatório analítico por período com gráfico mensal de receitas, despesas e saldo.
    */
-  async getSummaryByPeriod(start: Date, end: Date, ownerId: string) {
-    const transacoes = await this.transactionService.findByPeriod(start, end, ownerId);
+/*async getSummary(ownerId: string, startDate: Date, endDate: Date) {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
 
-    const resumo = {
-      totalReceitas: 0,
-      totalDespesas: 0,
-      saldoFinal: 0,
-    };
+  const transacoes = await this.transactionService.findByPeriod(start,end,ownerId);
 
-    // Agrupar por mês
-    const porMes = new Map<string, { receitas: number; despesas: number }>();
+  let despesas = 0;
+  let receitas = 0;
+  const evolucao: { mes: string; despesas: number; receitas: number; saldo: number }[] = [];
+
+  const agrupado = new Map<string, { despesas: number; receitas: number }>();
+
+  transacoes.forEach((t) => {
+    const mes = `${t.data.getFullYear()}-${String(t.data.getMonth() + 1).padStart(2, '0')}`;
+    const valor = t.valor;
+
+    if (!agrupado.has(mes)) {
+      agrupado.set(mes, { despesas: 0, receitas: 0 });
+    }
+
+    if (t.tipo === 'débito') {
+      agrupado.get(mes)!.despesas += valor;
+      despesas += valor;
+    } else {
+      agrupado.get(mes)!.receitas += valor;
+      receitas += valor;
+    }
+  });
+
+  let saldoAcumulado = 0;
+  agrupado.forEach((val, mes) => {
+    saldoAcumulado += val.receitas - val.despesas;
+    evolucao.push({
+      mes,
+      despesas: val.despesas,
+      receitas: val.receitas,
+      saldo: saldoAcumulado,
+    });
+  });
+
+  const contaInvestimento = await this.investmentBalanceService.get( ownerId );
+
+  return {
+    evolucao,
+    resumo: {
+      despesas,
+      receitas,
+      saldoFinal: receitas - despesas,
+      saldoContaInvestimento: contaInvestimento?.valor || 0,
+    },
+  };
+}*/
+
+  async getSummary(ownerId: string, dataInicial: string, dataFinal: string) {
+    const startDate = new Date(dataInicial);
+    const endDate = new Date(dataFinal);
+
+    const transacoes = await this.transactionService.findByPeriod( startDate, endDate, ownerId );
+
+    let despesas = 0;
+    let receitas = 0;
 
     for (const transacao of transacoes) {
-      const mes = `${transacao.data.getFullYear()}-${String(transacao.data.getMonth() + 1).padStart(2, '0')}`;
-
-      if (!porMes.has(mes)) {
-        porMes.set(mes, { receitas: 0, despesas: 0 });
-      }
-
-      const item = porMes.get(mes)!;
-
-      if (transacao.tipo === TransactionType.CREDITO) {
-        item.receitas += transacao.valor;
-        resumo.totalReceitas += transacao.valor;
-      } else if (transacao.tipo === TransactionType.DEBITO) {
-        item.despesas += transacao.valor;
-        resumo.totalDespesas += transacao.valor;
+      if (transacao.tipo === 'débito') {
+        despesas += transacao.valor;
+      } else if (transacao.tipo === 'crédito') {
+        receitas += transacao.valor;
       }
     }
 
-    // Organizar gráfico com saldo acumulado
-    const chartTemp = Array.from(porMes.entries())
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([mes, valores]) => ({
-        month: mes,
-        receitas: valores.receitas,
-        despesas: valores.despesas,
-      }));
+    const saldoInicial = await this.initialBalanceService.get(ownerId);
+    const saldoFinal = Number(saldoInicial) + (receitas - despesas);
 
-    let saldoAcumulado = 0;
-    const chart = chartTemp.map((item) => {
-      saldoAcumulado += item.receitas - item.despesas;
-      return { ...item, saldo: saldoAcumulado };
-    });
-
-    if (chart.length > 0) {
-      resumo.saldoFinal = chart[chart.length - 1].saldo;
-    }
+    // Caso tenha conta de investimento armazenada, por ex., no User
+    // Exemplo fixo:
+    const contaInvestimento = await this.investmentBalanceService.get( ownerId );
 
     return {
-      chart,
-      resumo,
+      despesas,
+      receitas,
+      saldoFinal,
+      contaInvestimento
     };
   }
+
 }

@@ -25,21 +25,14 @@ export class ReportsController {
   }
 
   @Get('summary')
-  async getSummaryByPeriod(
-    @Query('start', ParseDatePipe) start: Date,
-    @Query('end', ParseDatePipe) end: Date,
+  async getResumo(
+    @Query('startDate') dataInicial: string,
+    @Query('endDate') dataFinal: string,
     @Req() req: Request,
   ) {
-    if (start > end) {
-      throw new BadRequestException('A data inicial deve ser anterior à data final.');
-    }
-
-      const user = req['user'];
+    const user = req['user'];
     const ownerId = user.uid;
-    if (!ownerId) {
-      throw new BadRequestException('Usuário não autenticado.');
-    }
-
-    return this.reportsService.getSummaryByPeriod(start, end, ownerId);
+    console.log('Usuário autenticado:', user);
+    return this.reportsService.getSummary(ownerId, dataInicial, dataFinal);
   }
 }
