@@ -9,8 +9,11 @@ import { ReportsModule } from './reports/reports.module';
 import { APP_GUARD } from '@nestjs/core';
 import { FirebaseAuthGuard } from './firebase/firebase-auth.guard';
 import { InvestmentBalanceModule } from './investment-balance/investment-balance.module';
+import * as dotenv from 'dotenv';
+dotenv.config();
 
-const uri = "mongodb://localhost:27017/";
+const uri = 'mongodb+srv://paulo_cayres:'+ process.env.MONGO_URI + '@cayres.q7alqy4.mongodb.net/?retryWrites=true&w=majority&appName=Cayres';
+console.log(uri);
 
 
 @Module({
