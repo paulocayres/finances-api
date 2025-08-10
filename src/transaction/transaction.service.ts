@@ -18,15 +18,15 @@ export class TransactionService {
     const { recorrencia, numeroParcelas, unidadePeriodo, quantidadePeriodo, data, ...rest } = createTransactionDto;
 
     if (recorrencia === RecurrenceType.PARCELADA && (!numeroParcelas || numeroParcelas < 1)) {
-      throw new BadRequestException('Número de parcelas inválido para recorrência parcelada.');
+      throw new BadRequestException('Número de parcelas inválido para transação parcelada.');
     }
 
     if (recorrencia === RecurrenceType.RECORRENTE && !unidadePeriodo) {
-      throw new BadRequestException('Unidade de período é obrigatória para recorrência recorrente.');
+      throw new BadRequestException('Periodicidade é obrigatória para transação recorrente.');
     }
 
-    if (recorrencia === RecurrenceType.RECORRENTE && !quantidadePeriodo) {
-      throw new BadRequestException('UQuantidade de ocorrências é obrigatória para recorrência recorrente.');
+    if (recorrencia === RecurrenceType.RECORRENTE && (!quantidadePeriodo || quantidadePeriodo < 1)) {
+      throw new BadRequestException('Número de Períodos inválido para transação recorrente.');
     }
 
     const dataInicial = new Date(data);
@@ -54,7 +54,7 @@ export class TransactionService {
       return await this.transactionModel.insertMany(transacoes);
     }
 
-    if (recorrencia === RecurrenceType.RECORRENTE && unidadePeriodo && quantidadePeriodo) {
+    if (recorrencia === RecurrenceType.RECORRENTE && unidadePeriodo && quantidadePeriodo && quantidadePeriodo > 1) {
       const transacoes: Transaction[] = [];
       const maxOcorrencias = this.calcularMaxOcorrencias(unidadePeriodo, quantidadePeriodo);
 
@@ -122,11 +122,15 @@ export class TransactionService {
     const { recorrencia, numeroParcelas, unidadePeriodo, quantidadePeriodo, data, ...rest } = updateTransactionDto;
 
     if (recorrencia === RecurrenceType.PARCELADA && (!numeroParcelas || numeroParcelas < 1)) {
-      throw new BadRequestException('Número de parcelas inválido para recorrência parcelada.');
+      throw new BadRequestException('Número de parcelas inválido para transação parcelada.');
     }
 
     if (recorrencia === RecurrenceType.RECORRENTE && !unidadePeriodo) {
-      throw new BadRequestException('Unidade de período é obrigatória para recorrência recorrente.');
+      throw new BadRequestException('Periodicidade é obrigatória para transação recorrente.');
+    }
+
+    if (recorrencia === RecurrenceType.RECORRENTE && (!quantidadePeriodo || quantidadePeriodo < 1)) {
+      throw new BadRequestException('Número de Períodos inválido para transação recorrente.');
     }
 
     const dataInicial = new Date(data);

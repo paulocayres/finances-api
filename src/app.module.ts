@@ -17,7 +17,14 @@ console.log(uri);
 
 
 @Module({
-  imports: [MongooseModule.forRoot(uri), TransactionModule, InitialBalanceModule, ContaInvestimentoModule, ReportsModule, InvestmentBalanceModule,],
+  imports: [MongooseModule.forRootAsync({ useFactory: async () => ({ uri, connectionFactory: (connection) => {
+      // apply encryption plugin to all schemas
+      const { EncryptionService } = require('./common/encryption.service');
+      const { createEncryptionPlugin } = require('./common/mongoose-encryption.plugin');
+      const encSvc = new EncryptionService();
+      connection.plugin(createEncryptionPlugin(encSvc));
+      return connection;
+    }}) }), TransactionModule, InitialBalanceModule, ContaInvestimentoModule, ReportsModule, InvestmentBalanceModule,],
   controllers: [AppController],
   providers: [AppService,     {
       provide: APP_GUARD,
