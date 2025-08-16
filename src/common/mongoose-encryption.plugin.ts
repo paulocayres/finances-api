@@ -78,16 +78,52 @@ function traverseAndDecrypt(obj: any, encSvc: EncryptionService) {
 
 export function createEncryptionPlugin(encSvc: EncryptionService) {
   return function encryptionPlugin(schema: any) {
+    // pre validate decrypt if payload is already encrypted (so validation runs on plaintext)
+    schema.pre('validate', function(next: any) {
+      try {
+        const doc: any = this;
+        traverseAndDecrypt(doc, encSvc);
+      } catch (e) {
+        // ignore decryption failure; proceed with whatever is there
+      }
+      next();
+    });
+
     // pre save encrypt
+    
     schema.pre('save', function(next: any) {
       try {
-        const doc = this.toObject ? this.toObject() : this;
-        traverseAndEncrypt(doc, encSvc);
-        // copy back encrypted values to this
-        Object.assign(this, doc);
+        const doc: any = this;
+        // walk and encrypt only plaintext values (leave ones that already look encrypted)
+        function encryptInPlace(obj: any) {
+          if (!obj || typeof obj !== 'object') return;
+          for (const k of Object.keys(obj)) {
+            if (k === 'uid') continue;
+            const v = obj[k];
+            if (v === null || v === undefined) continue;
+            if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') {
+              if (typeof v === 'string' && encSvc.looksEncrypted(v)) continue;
+              obj[k] = encSvc.encrypt(String(v));
+            } else if (Array.isArray(v)) {
+              obj[k] = v.map((el: any) => {
+                if (typeof el === 'string') {
+                  return encSvc.looksEncrypted(el) ? el : encSvc.encrypt(el);
+                } else if (typeof el === 'number' || typeof el === 'boolean') {
+                  return encSvc.encrypt(String(el));
+                } else if (el && typeof el === 'object') {
+                  encryptInPlace(el);
+                  return el;
+                }
+                return el;
+              });
+            } else if (v && typeof v === 'object') {
+              encryptInPlace(v);
+            }
+          }
+        }
+        encryptInPlace(doc);
       } catch (e) {
-        // ignore encryption failure to not block save; log if needed
-        // console.error('Encryption pre-save failed', e);
+        // ignore encryption failure to not block save
       }
       next();
     });
@@ -107,23 +143,19 @@ export function createEncryptionPlugin(encSvc: EncryptionService) {
       } catch {}
     });
 
-    // on toObject / toJSON, decrypt a cloned object to avoid leaking encrypted fields
-    const toObject = schema.methods.toObject;
-    schema.methods.toObject = function(...args: any[]) {
-      const obj = toObject ? toObject.apply(this, args) : Object.assign({}, this);
-      try {
-        traverseAndDecrypt(obj, encSvc);
-      } catch {}
-      return obj;
-    };
-
-    const toJSON = schema.methods.toJSON;
-    schema.methods.toJSON = function(...args: any[]) {
-      const obj = toJSON ? toJSON.apply(this, args) : Object.assign({}, this);
-      try {
-        traverseAndDecrypt(obj, encSvc);
-      } catch {}
-      return obj;
-    };
+    
+    // Use schema.set transforms to decrypt on output without overriding Mongoose internals
+    schema.set('toObject', {
+      transform: (_doc: any, ret: any) => {
+        try { traverseAndDecrypt(ret, encSvc); } catch {}
+        return ret;
+      }
+    });
+    schema.set('toJSON', {
+      transform: (_doc: any, ret: any) => {
+        try { traverseAndDecrypt(ret, encSvc); } catch {}
+        return ret;
+      }
+    });
   };
 }
