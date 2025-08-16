@@ -5,16 +5,19 @@
  * This script is idempotent: it checks if a field looks encrypted and skips it.
  */
 const { MongoClient } = require('mongodb');
-const { createEncryptionPlugin } = require('../../src/common/mongoose-encryption.plugin');
+//const { createEncryptionPlugin } = require('../../src/common/mongoose-encryption.plugin');
+//const { createEncryptionPlugin } = require('../../src/common/mongoose-encryption.plugin');
 const path = require('path');
 
 async function main() {
-  const uri = process.env.MONGO_URI;
+  //const uri = process.env.MONGO_URI;
+  const uri = 'mongodb+srv://paulo_cayres:'+ process.env.MONGO_URI + '@cayres.q7alqy4.mongodb.net/?retryWrites=true&w=majority&appName=Cayres';
   if (!uri) {
     console.error('MONGO_URI env required');
     process.exit(1);
   }
   const key = process.env.ENCRYPTION_KEY;
+  //const key = process.env.ENCRYPTION_KEY;
   if (!key) {
     console.error('ENCRYPTION_KEY env required');
     process.exit(1);
