@@ -111,13 +111,17 @@ export function createEncryptionPlugin(encSvc: EncryptionService) {
     // Use schema.set transforms to decrypt on output without overriding Mongoose internals
     schema.set('toObject', {
       transform: (_doc: any, ret: any) => {
-        try { traverseAndDecrypt(ret, encSvc); } catch {}
+        try {
+          traverseAndDecrypt(ret, encSvc);
+        } catch {}
         return ret;
       }
     });
     schema.set('toJSON', {
       transform: (_doc: any, ret: any) => {
-        try { traverseAndDecrypt(ret, encSvc); } catch {}
+        try {
+          traverseAndDecrypt(ret, encSvc);
+        } catch {}
         return ret;
       }
     });
