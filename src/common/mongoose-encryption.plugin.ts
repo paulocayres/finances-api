@@ -8,27 +8,10 @@ function isObject(v: any) {
 function traverseAndEncrypt(obj: any, encSvc: EncryptionService) {
   if (!obj || typeof obj !== 'object') return;
   for (const k of Object.keys(obj)) {
-    if (k === 'uid') continue; // do not encrypt uid anywhere
+    if (k === '_id' || (k !== 'valor' && k !== 'descricao')) continue; // Ignore _id and encrypt only 'valor' and 'descricao'
     const v = obj[k];
     if (v === null || v === undefined) continue;
     if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') {
-      // primitive -> encrypt to string
-      obj[k] = encSvc.encrypt(String(v));
-    } else if (Array.isArray(v)) {
-      obj[k] = v.map((el) => {
-        if (isObject(el)) {
-          traverseAndEncrypt(el, encSvc);
-          return el;
-        } else {
-          return encSvc.encrypt(String(el));
-        }
-      });
-    } else if (isObject(v)) {
-      traverseAndEncrypt(v, encSvc);
-    } else if (v instanceof Date) {
-      obj[k] = encSvc.encrypt(v.toISOString());
-    } else {
-      // fallback
       obj[k] = encSvc.encrypt(String(v));
     }
   }
@@ -37,41 +20,18 @@ function traverseAndEncrypt(obj: any, encSvc: EncryptionService) {
 function traverseAndDecrypt(obj: any, encSvc: EncryptionService) {
   if (!obj || typeof obj !== 'object') return;
   for (const k of Object.keys(obj)) {
-    if (k === 'uid') continue;
+    if (k === '_id' || (k !== 'valor' && k !== 'descricao')) continue; // Ignore _id and decrypt only 'valor' and 'descricao'
     const v = obj[k];
     if (v === null || v === undefined) continue;
     if (typeof v === 'string' && encSvc.looksEncrypted(v)) {
       try {
         const dec = encSvc.decrypt(v);
-        // try parse JSON or ISO date
-        if (/^\d{4}-\d{2}-\d{2}T/.test(dec)) {
-          obj[k] = new Date(dec);
-        } else {
-          // keep original type guess: number/boolean/string
-          if (/^-?\d+(\.\d+)?$/.test(dec)) obj[k] = Number(dec);
-          else if (dec === 'true' || dec === 'false') obj[k] = dec === 'true';
-          else obj[k] = dec;
-        }
+        if (/^-?\d+(\.\d+)?$/.test(dec)) obj[k] = Number(dec);
+        else if (dec === 'true' || dec === 'false') obj[k] = dec === 'true';
+        else obj[k] = dec;
       } catch (e) {
         // not decryptable or not actually encrypted; leave as is
       }
-    } else if (Array.isArray(v)) {
-      obj[k] = v.map((el) => {
-        if (typeof el === 'string' && encSvc.looksEncrypted(el)) {
-          try {
-            return encSvc.decrypt(el);
-          } catch {
-            return el;
-          }
-        } else if (isObject(el)) {
-          traverseAndDecrypt(el, encSvc);
-          return el;
-        } else {
-          return el;
-        }
-      });
-    } else if (isObject(v)) {
-      traverseAndDecrypt(v, encSvc);
     }
   }
 }
@@ -90,15 +50,20 @@ export function createEncryptionPlugin(encSvc: EncryptionService) {
     });
 
     // pre save encrypt
-    
     schema.pre('save', function(next: any) {
       try {
         const doc: any = this;
-        // walk and encrypt only plaintext values (leave ones that already look encrypted)
+
+        // Ensure _id is not manually set to an invalid value
+        if (doc._id && doc._id.toString() === '000000000000000000000000') {
+          return next(new Error('Invalid _id detected: 000000000000000000000000'));
+        }
+
+        // Walk and encrypt only plaintext values (leave ones that already look encrypted)
         function encryptInPlace(obj: any) {
           if (!obj || typeof obj !== 'object') return;
           for (const k of Object.keys(obj)) {
-            if (k === 'uid') continue;
+            if (k === '_id' || k === 'uid') continue; // Ignore _id and uid
             const v = obj[k];
             if (v === null || v === undefined) continue;
             if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') {
@@ -143,7 +108,6 @@ export function createEncryptionPlugin(encSvc: EncryptionService) {
       } catch {}
     });
 
-    
     // Use schema.set transforms to decrypt on output without overriding Mongoose internals
     schema.set('toObject', {
       transform: (_doc: any, ret: any) => {
