@@ -8,7 +8,7 @@ function isObject(v: any) {
 function traverseAndEncrypt(obj: any, encSvc: EncryptionService) {
   if (!obj || typeof obj !== 'object') return;
   for (const k of Object.keys(obj)) {
-    if (k === '_id' || k === 'ownerId' || (k !== 'valor' && k !== 'descricao')) continue; // Ignore _id, ownerId, and encrypt only 'valor' and 'descricao'
+    if (k !== 'valor' && k !== 'descricao') continue; // Só criptografa valor e descricao
     const v = obj[k];
     if (v === null || v === undefined) continue;
     if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') {
