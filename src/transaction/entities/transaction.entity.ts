@@ -1,6 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import { TransactionType, RecurrenceType, PeriodUnit } from '../enums';
+import { createEncryptionPlugin } from '../../common/mongoose-encryption.plugin';
+import { EncryptionService } from '../../common/encryption.service';
+
+const encryptionService = new EncryptionService();
 
 @Schema()
 export class Transaction extends Document {
@@ -41,3 +45,5 @@ export class Transaction extends Document {
 export type TransactionDocument = Transaction & Document;
 
 export const TransactionSchema = SchemaFactory.createForClass(Transaction);
+
+TransactionSchema.plugin(createEncryptionPlugin(encryptionService));
