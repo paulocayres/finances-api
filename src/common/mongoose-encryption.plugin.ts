@@ -63,26 +63,12 @@ export function createEncryptionPlugin(encSvc: EncryptionService) {
         function encryptInPlace(obj: any) {
           if (!obj || typeof obj !== 'object') return;
           for (const k of Object.keys(obj)) {
-            if (k === '_id' || k === 'uid' || k === 'ownerId') continue; // Ignore _id, uid, and ownerId
+            if (k !== 'valor' && k !== 'descricao') continue; // Só criptografa valor e descricao
             const v = obj[k];
             if (v === null || v === undefined) continue;
             if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') {
               if (typeof v === 'string' && encSvc.looksEncrypted(v)) continue;
               obj[k] = encSvc.encrypt(String(v));
-            } else if (Array.isArray(v)) {
-              obj[k] = v.map((el: any) => {
-                if (typeof el === 'string') {
-                  return encSvc.looksEncrypted(el) ? el : encSvc.encrypt(el);
-                } else if (typeof el === 'number' || typeof el === 'boolean') {
-                  return encSvc.encrypt(String(el));
-                } else if (el && typeof el === 'object') {
-                  encryptInPlace(el);
-                  return el;
-                }
-                return el;
-              });
-            } else if (v && typeof v === 'object') {
-              encryptInPlace(v);
             }
           }
         }
