@@ -11,7 +11,7 @@ export class Transaction extends Document {
   descricao: string;
 
   @Prop({ required: true })
-  valor: number;
+  valor: string;
 
   @Prop({ required: true, index: true })
   data: Date;
@@ -47,5 +47,5 @@ export const TransactionSchema = SchemaFactory.createForClass(Transaction);
 
 TransactionSchema.plugin(mongooseEncryption, {
   secret: encKey,
-  encryptedFields: [ 'descricao', 'valor']
+  encryptedFields: [ 'descricao', 'valor' ]
 });
