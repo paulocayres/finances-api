@@ -10,8 +10,8 @@ export enum RecurrenceType {
 }
 
 export enum PeriodUnit {
-  DIA = 'dia',
-  SEMANA = 'semana',
-  MES = 'mês',
-  ANO = 'ano',
+  DIA = 'diária',
+  SEMANA = 'semanal',
+  MES = 'mensal',
+  ANO = 'anual',
 }
