@@ -1,10 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import { TransactionType, RecurrenceType, PeriodUnit } from '../enums';
-import { createEncryptionPlugin } from '../../common/mongoose-encryption.plugin';
-import { EncryptionService } from '../../common/encryption.service';
+import * as mongooseEncryption from 'mongoose-encryption';
 
-const encryptionService = new EncryptionService();
+const encKey = process.env.MONGO_ENC_KEY || 'minha-chave-secreta-32bytes';
 
 @Schema()
 export class Transaction extends Document {
@@ -46,4 +45,7 @@ export type TransactionDocument = Transaction & Document;
 
 export const TransactionSchema = SchemaFactory.createForClass(Transaction);
 
-TransactionSchema.plugin(createEncryptionPlugin(encryptionService));
+TransactionSchema.plugin(mongooseEncryption, {
+  secret: encKey,
+  encryptedFields: ['valor', 'descricao'],
+});
