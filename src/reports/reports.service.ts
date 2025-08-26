@@ -35,22 +35,22 @@ export class ReportsService {
 
     const totalCreditsBefore = previousTransactions
       .filter(t => t.tipo === TransactionType.CREDITO)
-      .reduce((sum, t) => sum + t.valor, 0);
+      .reduce((sum, t) => sum + Number(t.valor), 0);
 
     const totalDebitsBefore = previousTransactions
       .filter(t => t.tipo === TransactionType.DEBITO)
-      .reduce((sum, t) => sum + t.valor, 0);
+      .reduce((sum, t) => sum + Number(t.valor), 0);
 
     const saldoAntesDoMes = saldoInicial + totalCreditsBefore - totalDebitsBefore;
 
     // Saldo final do mês
     const creditosMes = transactions
       .filter(t => t.tipo === TransactionType.CREDITO)
-      .reduce((sum, t) => sum + t.valor, 0);
+      .reduce((sum, t) => sum + Number(t.valor), 0);
 
     const debitosMes = transactions
       .filter(t => t.tipo === TransactionType.DEBITO)
-      .reduce((sum, t) => sum + t.valor, 0);
+      .reduce((sum, t) => sum + Number(t.valor), 0);
 
     const saldoFinalMes = saldoAntesDoMes + creditosMes - debitosMes;
 
@@ -81,7 +81,7 @@ export class ReportsService {
   
     transacoes.forEach((t) => {
       const mes = `${t.data.getFullYear()}-${String(t.data.getMonth() + 1).padStart(2, '0')}`;
-      const valor = t.valor;
+      const valor = Number(t.valor);
   
       if (!agrupado.has(mes)) {
         agrupado.set(mes, { despesas: 0, receitas: 0 });
@@ -142,11 +142,11 @@ export class ReportsService {
     const stats = evolucaoMap.get(mesAno)!;
 
     if (transacao.tipo === 'débito') {
-      stats.despesas += transacao.valor;
-      despesas += transacao.valor;
+      stats.despesas += Number(transacao.valor);
+      despesas += Number(transacao.valor);
     } else if (transacao.tipo === 'crédito') {
-      stats.receitas += transacao.valor;
-      receitas += transacao.valor;
+      stats.receitas += Number(transacao.valor);
+      receitas += Number(transacao.valor);
     }
   }
 
