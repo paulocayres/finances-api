@@ -36,7 +36,7 @@ export class TransactionService {
       const transacoes: any[] = [];
       for (let i = 0; i < numeroParcelas; i++) {
         const novaData = this.adicionarPeriodo(dataInicial, PeriodUnit.MES, i);
-        transacoes.push({
+        const transacaoDoc = new this.transactionModel({
           ...rest,
           ownerId,
           recorrencia,
@@ -45,8 +45,10 @@ export class TransactionService {
           data: novaData,
           groupId,
         });
+        await transacaoDoc.save();
+        transacoes.push(transacaoDoc);
       }
-      return await this.transactionModel.insertMany(transacoes);
+      return transacoes;
     }
 
     if (recorrencia === RecurrenceType.RECORRENTE && unidadePeriodo && quantidadePeriodo && quantidadePeriodo > 1) {
@@ -54,7 +56,7 @@ export class TransactionService {
       const maxOcorrencias = this.calcularMaxOcorrencias(unidadePeriodo, quantidadePeriodo);
       for (let i = 0; i < maxOcorrencias; i++) {
         const novaData = this.adicionarPeriodo(dataInicial, unidadePeriodo, i);
-        transacoes.push({
+        const transacaoDoc = new this.transactionModel({
           ...rest,
           ownerId,
           recorrencia,
@@ -63,8 +65,10 @@ export class TransactionService {
           data: novaData,
           groupId,
         });
+        await transacaoDoc.save();
+        transacoes.push(transacaoDoc);
       }
-      return await this.transactionModel.insertMany(transacoes);
+      return transacoes;
     }
 
     const transacaoUnica = new this.transactionModel({
@@ -131,7 +135,7 @@ export class TransactionService {
       const transacoes: any[] = [];
       for (let i = 0; i < numeroParcelas; i++) {
         const novaData = this.adicionarPeriodo(dataInicial, PeriodUnit.MES, i);
-        transacoes.push({
+        const transacaoDoc = new this.transactionModel({
           ...rest,
           ownerId,
           recorrencia,
@@ -140,8 +144,9 @@ export class TransactionService {
           data: novaData,
           groupId,
         });
+        await transacaoDoc.save();
+        transacoes.push(transacaoDoc);
       }
-      await this.transactionModel.insertMany(transacoes);
       return transacoes[0];
     }
 
@@ -151,7 +156,7 @@ export class TransactionService {
       const maxOcorrencias = this.calcularMaxOcorrencias(unidadePeriodo, quantidadePeriodo);
       for (let i = 0; i < maxOcorrencias; i++) {
         const novaData = this.adicionarPeriodo(dataInicial, unidadePeriodo, i);
-        transacoes.push({
+        const transacaoDoc = new this.transactionModel({
           ...rest,
           ownerId,
           recorrencia,
@@ -160,8 +165,9 @@ export class TransactionService {
           data: novaData,
           groupId,
         });
+        await transacaoDoc.save();
+        transacoes.push(transacaoDoc);
       }
-      await this.transactionModel.insertMany(transacoes);
       return transacoes[0];
     }
 
