@@ -33,8 +33,13 @@ export class ReportsService {
     const initialBalance = await this.initialBalanceService.get(ownerId);
 
     let saldoInicial = 0;
-    if (initialBalance?.data && startDate >= new Date(initialBalance.data)) {
-      saldoInicial = Number(initialBalance.valor);
+    if (initialBalance?.data) {
+      const dataSaldo = new Date(initialBalance.data);
+      const mesmoMesAno = dataSaldo.getFullYear() === startDate.getFullYear() && dataSaldo.getMonth() === startDate.getMonth();
+      const primeiroDiaMes = startDate.getDate() === 1;
+      if (startDate > dataSaldo || (mesmoMesAno && (startDate.getDate() >= dataSaldo.getDate() || primeiroDiaMes))) {
+        saldoInicial = Number(initialBalance.valor);
+      }
     }
 
     const totalCreditsBefore = previousTransactions
