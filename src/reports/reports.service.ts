@@ -36,7 +36,7 @@ export class ReportsService {
     if (initialBalance?.data) {
       const dataSaldo = new Date(initialBalance.data);
       const mesmoMesAno = dataSaldo.getFullYear() === startDate.getFullYear() && dataSaldo.getMonth() === startDate.getMonth();
-      const primeiroDiaMes = startDate.getDate() === 1;
+      const primeiroDiaMes = dataSaldo.getDate() === 1;
       if (startDate > dataSaldo || (mesmoMesAno && (startDate.getDate() >= dataSaldo.getDate() || primeiroDiaMes))) {
         saldoInicial = Number(initialBalance.valor);
       }
