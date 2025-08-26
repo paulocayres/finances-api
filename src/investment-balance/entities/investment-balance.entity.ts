@@ -21,5 +21,4 @@ export const InvestmentBalanceSchema = SchemaFactory.createForClass(InvestmentBa
 const encKey = process.env.MONGO_ENC_KEY || 'minha-chave-secreta-32bytes';
 InvestmentBalanceSchema.plugin(mongooseEncryption, {
   secret: encKey,
-  encryptedFields: ['valor'],
 });
