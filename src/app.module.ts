@@ -11,7 +11,7 @@ import { InvestmentBalanceModule } from './investment-balance/investment-balance
 import * as dotenv from 'dotenv';
 dotenv.config();
 
-const uri = 'mongodb+srv://paulo_cayres:'+ process.env.MONGO_URI + '@cayres.q7alqy4.mongodb.net/?retryWrites=true&w=majority&appName=Cayres';
+const uri = 'mongodb+srv://paulo_cayres:' + process.env.MONGO_URI + '@cayres.q7alqy4.mongodb.net/cayresfinance?retryWrites=true&w=majority&appName=Cayres';
 console.log(uri);
 
 
