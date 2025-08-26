@@ -5,7 +5,6 @@ import { GetMonthlyAgendaDto } from './dto/GetMonthlyAgendaDto';
 import { TransactionType } from 'src/transaction/enums';
 import * as dayjs from 'dayjs';
 import { InvestmentBalanceService } from 'src/investment-balance/investment-balance.service';
-import { ContaInvestimentoService } from 'src/conta-investimento/conta-investimento.service';
 import { addMonths, isBefore, format } from 'date-fns';
 import { SummaryResponseDto } from './dto/SummaryResponseDTO';
 import { EvolucaoMensalDto } from './dto/EvolucaoMensalDTO';
