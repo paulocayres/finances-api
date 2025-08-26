@@ -2,6 +2,8 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import * as mongooseEncryption from 'mongoose-encryption';
 
+const encKey = process.env.MONGO_ENC_KEY || 'minha-chave-secreta-32bytes';
+
 export type InvestmentBalanceDocument = InvestmentBalance & Document;
 
 @Schema()
@@ -18,7 +20,7 @@ export class InvestmentBalance {
 
 export const InvestmentBalanceSchema = SchemaFactory.createForClass(InvestmentBalance);
 
-const encKey = process.env.MONGO_ENC_KEY || 'minha-chave-secreta-32bytes';
 InvestmentBalanceSchema.plugin(mongooseEncryption, {
   secret: encKey,
+  encryptedFields: ['data', 'valor']
 });
