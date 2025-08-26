@@ -31,7 +31,11 @@ export class ReportsService {
     // Saldo acumulado anterior ao mês para o ownerId
     const previousTransactions = await this.transactionService.findBeforeDate(startDate, ownerId);
     const initialBalance = await this.initialBalanceService.get(ownerId);
-    const saldoInicial = initialBalance?.valor || 0;
+
+    let saldoInicial = 0;
+    if (initialBalance?.data && startDate >= new Date(initialBalance.data)) {
+      saldoInicial = Number(initialBalance.valor);
+    }
 
     const totalCreditsBefore = previousTransactions
       .filter(t => t.tipo === TransactionType.CREDITO)
