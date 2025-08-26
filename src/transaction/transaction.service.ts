@@ -14,7 +14,7 @@ export class TransactionService {
     @InjectModel(Transaction.name) private readonly transactionModel: Model<TransactionDocument>
   ) {}
 
-  async create(createTransactionDto: CreateTransactionDto, ownerId: string): Promise<Transaction[]> {
+  async create(createTransactionDto: CreateTransactionDto, ownerId: string): Promise<any[]> {
     const { recorrencia, numeroParcelas, unidadePeriodo, quantidadePeriodo, data, ...rest } = createTransactionDto;
 
     if (recorrencia === RecurrenceType.PARCELADA && (!numeroParcelas || numeroParcelas < 1)) {
@@ -33,12 +33,10 @@ export class TransactionService {
     const groupId = (recorrencia === RecurrenceType.PARCELADA || recorrencia === RecurrenceType.RECORRENTE) ? uuidv4() : null;
 
     if (recorrencia === RecurrenceType.PARCELADA && numeroParcelas && numeroParcelas > 1) {
-      const transacoes: Transaction[] = [];
-
+      const transacoes: any[] = [];
       for (let i = 0; i < numeroParcelas; i++) {
         const novaData = this.adicionarPeriodo(dataInicial, PeriodUnit.MES, i);
-
-        const transacao = new this.transactionModel({
+        transacoes.push({
           ...rest,
           ownerId,
           recorrencia,
@@ -47,21 +45,16 @@ export class TransactionService {
           data: novaData,
           groupId,
         });
-
-        transacoes.push(transacao);
       }
-
       return await this.transactionModel.insertMany(transacoes);
     }
 
     if (recorrencia === RecurrenceType.RECORRENTE && unidadePeriodo && quantidadePeriodo && quantidadePeriodo > 1) {
-      const transacoes: Transaction[] = [];
+      const transacoes: any[] = [];
       const maxOcorrencias = this.calcularMaxOcorrencias(unidadePeriodo, quantidadePeriodo);
-
       for (let i = 0; i < maxOcorrencias; i++) {
         const novaData = this.adicionarPeriodo(dataInicial, unidadePeriodo, i);
-
-        const transacao = new this.transactionModel({
+        transacoes.push({
           ...rest,
           ownerId,
           recorrencia,
@@ -70,10 +63,7 @@ export class TransactionService {
           data: novaData,
           groupId,
         });
-
-        transacoes.push(transacao);
       }
-
       return await this.transactionModel.insertMany(transacoes);
     }
 
@@ -110,7 +100,7 @@ export class TransactionService {
     return transaction;
   }
 
-  async update(id: string, updateTransactionDto: UpdateTransactionDto, ownerId: string): Promise<Transaction> {
+  async update(id: string, updateTransactionDto: UpdateTransactionDto, ownerId: string): Promise<any> {
     const transacao = await this.transactionModel.findById(id);
     if (!transacao) {
       throw new NotFoundException('Transação não encontrada.');
@@ -138,13 +128,10 @@ export class TransactionService {
 
     if (recorrencia === RecurrenceType.PARCELADA && numeroParcelas && numeroParcelas > 1) {
       await this.transactionModel.deleteMany({ groupId: transacao.groupId, ownerId });
-
-      const transacoes: Transaction[] = [];
-
+      const transacoes: any[] = [];
       for (let i = 0; i < numeroParcelas; i++) {
         const novaData = this.adicionarPeriodo(dataInicial, PeriodUnit.MES, i);
-
-        const novaTransacao = new this.transactionModel({
+        transacoes.push({
           ...rest,
           ownerId,
           recorrencia,
@@ -153,25 +140,18 @@ export class TransactionService {
           data: novaData,
           groupId,
         });
-
-        transacoes.push(novaTransacao);
       }
-
       await this.transactionModel.insertMany(transacoes);
-
       return transacoes[0];
     }
 
     if (recorrencia === RecurrenceType.RECORRENTE && unidadePeriodo && quantidadePeriodo) {
       await this.transactionModel.deleteMany({ groupId: transacao.groupId, ownerId });
-
-      const transacoes: Transaction[] = [];
+      const transacoes: any[] = [];
       const maxOcorrencias = this.calcularMaxOcorrencias(unidadePeriodo, quantidadePeriodo);
-
       for (let i = 0; i < maxOcorrencias; i++) {
         const novaData = this.adicionarPeriodo(dataInicial, unidadePeriodo, i);
-
-        const novaTransacao = new this.transactionModel({
+        transacoes.push({
           ...rest,
           ownerId,
           recorrencia,
@@ -180,12 +160,8 @@ export class TransactionService {
           data: novaData,
           groupId,
         });
-
-        transacoes.push(novaTransacao);
       }
-
       await this.transactionModel.insertMany(transacoes);
-
       return transacoes[0];
     }
 
