@@ -47,5 +47,5 @@ export const TransactionSchema = SchemaFactory.createForClass(Transaction);
 
 TransactionSchema.plugin(mongooseEncryption, {
   secret: encKey,
-  encryptedFields: ['data', 'descricao', 'valor']
+  encryptedFields: ['data', 'descricao', 'valor', 'tipo', 'recorrencia', 'groupId', 'numeroParcelas', 'numeroParcela', 'unidadePeriodo', 'quantidadePeriodo']
 });
