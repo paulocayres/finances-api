@@ -11,7 +11,6 @@ export class InvestmentBalanceService {
   ) {}
 
   async get(ownerId: string): Promise<InvestmentBalance> {
-    //console.log('entrou no get Conta Investimento com ownerId:', ownerId);
     const balance = await this.InvestmentBalanceModel.findOne({ ownerId });
     if (!balance) {
       throw new NotFoundException('Saldo da Conta Investimento não cadastrado para este usuário.');
