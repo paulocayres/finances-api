@@ -37,9 +37,13 @@ export class ReportsService {
       const dataSaldo = new Date(initialBalance.data);
       const mesmoMesAno = dataSaldo.getFullYear() === startDate.getFullYear() && dataSaldo.getMonth() === startDate.getMonth();
       const primeiroDiaMes = dataSaldo.getDate() === 1;
-      if (startDate > dataSaldo || (mesmoMesAno && (startDate.getDate() >= dataSaldo.getDate() || primeiroDiaMes))) {
+      // if (startDate > dataSaldo || (mesmoMesAno && (startDate.getDate() >= dataSaldo.getDate() || primeiroDiaMes))) {
+      //   saldoInicial = Number(initialBalance.valor);
+      // }
+      if ( !primeiroDiaMes && mesmoMesAno ) {
         saldoInicial = Number(initialBalance.valor);
       }
+      
     }
 
     const totalCreditsBefore = previousTransactions
