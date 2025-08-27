@@ -163,10 +163,12 @@ export class ReportsService {
     }
   }
 
-  const saldoInicial = await this.initialBalanceService.get(ownerId);
+  const initialBalance = await this.initialBalanceService.get(ownerId);
   const contaInvestimento = (await this.contaInvestimentoService.get(ownerId)).valor;
 
-  let saldoAcumulado = Number(saldoInicial.valor);
+  let saldoAcumulado = 0;
+  let saldoInicialJaSomado = false;
+  let dataSaldo = initialBalance?.data ? new Date(initialBalance.data) : null;
 
   const evolucao: EvolucaoMensalDto[] = [];
 
@@ -177,6 +179,18 @@ export class ReportsService {
   while (!isBefore(endDate, current)) {
     const mesAno = format(current, 'yyyy-MM');
     const valores = evolucaoMap.get(mesAno) || { despesas: 0, receitas: 0 };
+
+    // Somar initialBalance apenas a partir do mês/ano do saldo
+    if (
+      initialBalance?.valor &&
+      dataSaldo &&
+      current.getFullYear() === dataSaldo.getFullYear() &&
+      current.getMonth() === dataSaldo.getMonth() &&
+      !saldoInicialJaSomado
+    ) {
+      saldoAcumulado += Number(initialBalance.valor);
+      saldoInicialJaSomado = true;
+    }
 
     saldoAcumulado += (valores.receitas - valores.despesas);
 
@@ -191,14 +205,6 @@ export class ReportsService {
   }
 
   const saldoFinal = saldoAcumulado;
-
-  console.log(evolucao,
-   
-      despesas,
-      receitas,
-      saldoFinal,
-      contaInvestimento
-    );
 
   return {
     evolucao,
