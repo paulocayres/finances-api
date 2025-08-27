@@ -134,6 +134,17 @@ export class ReportsService {
   }*/
 
   async getSummary(ownerId: string, dataInicial: string, dataFinal: string): Promise<SummaryResponseDto> {
+  // Buscar todas as transações anteriores ao período
+  const primeiraDataPeriodo = new Date(dataInicial);
+  const transacoesAnteriores = await this.transactionService.findBeforeDate(primeiraDataPeriodo, ownerId);
+
+  // Calcular saldo histórico anterior
+  let saldoHistoricoAnterior = 0;
+  if (transacoesAnteriores && transacoesAnteriores.length > 0) {
+    const receitasAntes = transacoesAnteriores.filter(t => t.tipo === 'crédito').reduce((sum, t) => sum + Number(t.valor), 0);
+    const despesasAntes = transacoesAnteriores.filter(t => t.tipo === 'débito').reduce((sum, t) => sum + Number(t.valor), 0);
+    saldoHistoricoAnterior = receitasAntes - despesasAntes;
+  }
   const startDate = new Date(dataInicial);
   const endDate = new Date(dataFinal);
 
@@ -190,6 +201,11 @@ export class ReportsService {
     ) {
       saldoAcumulado += Number(initialBalance.valor);
       saldoInicialJaSomado = true;
+    }
+
+    // Para o primeiro elemento, somar saldo histórico anterior
+    if (evolucao.length === 0) {
+      saldoAcumulado += saldoHistoricoAnterior;
     }
 
     saldoAcumulado += (valores.receitas - valores.despesas);
