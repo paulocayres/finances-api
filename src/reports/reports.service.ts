@@ -40,7 +40,7 @@ export class ReportsService {
       // if (startDate > dataSaldo || (mesmoMesAno && (startDate.getDate() >= dataSaldo.getDate() || primeiroDiaMes))) {
       //   saldoInicial = Number(initialBalance.valor);
       // }
-      if ( !primeiroDiaMes && mesmoMesAno || startDate > dataSaldo ) {
+      if ( primeiroDiaMes && mesmoMesAno || startDate > dataSaldo ) {
         saldoInicial = Number(initialBalance.valor);
       }
       
